@@ -1,1 +1,108 @@
 @import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Epilogue", ui-sans-serif, system-ui, sans-serif;
+
+  --color-primary: #edb1ff; /* Radiant Purple */
+  --color-primary-container: #310045;
+  --color-secondary: #00e478; /* Electric Green */
+  --color-dark-bg: #0a0a0a;
+  --color-surface: #121212;
+  --color-on-surface: #ffffff;
+  --color-on-surface-muted: #64748b;
+
+  --animate-fade-in: fade-in 0.8s ease-out forwards;
+  --animate-fade-up: fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-scale-in: scale-in 0.5s ease-out forwards;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@layer utilities {
+  .glass-dark {
+    background: rgba(18, 18, 18, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .text-glow-primary {
+    text-shadow: 0 0 15px rgba(237, 177, 255, 0.4);
+  }
+
+  .text-glow-secondary {
+    text-shadow: 0 0 15px rgba(0, 228, 120, 0.4);
+  }
+
+  .bg-primary-gradient {
+    background: linear-gradient(135deg, var(--color-primary), #b76dff);
+  }
+
+  .no-scroll {
+    overflow: hidden;
+    height: 100vh;
+  }
+}
+
+:root {
+  font-family: var(--font-sans);
+  --theme-bg: var(--color-dark-bg);
+  --theme-text: #ffffff;
+  --theme-text-muted: rgba(255, 255, 255, 0.4);
+  --theme-border: rgba(255, 255, 255, 0.1);
+  --theme-input-bg: rgba(255, 255, 255, 0.05);
+  background-color: var(--theme-bg);
+  color: var(--theme-text);
+}
+
+:root.light {
+  --theme-bg: #ffffff;
+  --theme-text: #1a1a1a;
+  --theme-text-muted: rgba(0, 0, 0, 0.5);
+  --theme-border: rgba(0, 0, 0, 0.1);
+  --theme-input-bg: rgba(0, 0, 0, 0.03);
+  background-color: var(--theme-bg);
+  color: var(--theme-text);
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  background-color: var(--theme-bg);
+  color: var(--theme-text);
+  scrollbar-width: thin;
+  scrollbar-color: var(--theme-border) transparent;
+}
+
+/* Custom Webkit Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--theme-border);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--theme-text-muted);
+}

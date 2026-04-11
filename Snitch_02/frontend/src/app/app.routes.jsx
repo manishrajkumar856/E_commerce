@@ -1,6 +1,8 @@
 import { createBrowserRouter } from "react-router";
 import AppLayout from "./AppLayout";
 
+import SignupPage from "../features/auth/pages/SignupPage";
+
 const routes = createBrowserRouter([
     {
         path: '/login',
@@ -8,7 +10,7 @@ const routes = createBrowserRouter([
     },
     {
         path: '/register',
-        element: <h1>Register</h1>
+        element: <SignupPage />
     },
     {
         path: '/',
