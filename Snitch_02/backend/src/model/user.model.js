@@ -13,7 +13,7 @@ const userSchema = mongoose.Schema({
     },
     contact: {
         type: String,
-        required: true
+        required: false
     },
     role: {
         type: String,
@@ -22,8 +22,16 @@ const userSchema = mongoose.Schema({
     },
     password: {
         type: String,
-        required: true,
+        required: function(){
+            return !this.googleId;
+        },
         select: false,
+    },
+    profileUrl: {
+        type: String,
+    },
+    googleId: {
+        type: String
     }
 });
 

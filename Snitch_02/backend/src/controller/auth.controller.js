@@ -76,3 +76,32 @@ export const loginUser = async (req, res, next) =>{
         next();
     }
 }
+
+export const googleCallback = async (req, res, next) => {
+    const  {id, displayName, emails, photos} = req.user;
+
+    try {
+        let user = await userModel.findOne({
+            email: emails[0].value,
+        });
+
+        if(!user){
+            user = await userModel.create({
+                fullname: displayName,
+                email: emails[0].value,
+                profileUrl: photos[0].value,
+                googleId: id,
+            })
+        }
+
+        // Generate a JWT for the authenticated user
+        const token = jwt.sign({ id: id }, config.JWT_SECRET , { expiresIn: '7h' });
+
+        // Send the token to the client
+        res.cookie("token", token);
+        res.redirect('http://localhost:5173/');
+
+    } catch (error) {
+        res.redirect('http://localhost:5173/login');
+    }        
+}
