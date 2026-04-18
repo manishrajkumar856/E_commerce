@@ -1,9 +1,10 @@
 import { Router } from "express";
-import { googleCallback, loginUser, registerUser } from "../controller/auth.controller.js";
+import { getMeController, googleCallback, loginUser, registerUser } from "../controller/auth.controller.js";
 import { validateLoginUser, validateRegisterUser } from "../validator/auth.validator.js";
 import jwt from 'jsonwebtoken';
 import passport from "passport";
 import config from "../config/config.js";
+import { authenticateUser } from "../middleware/auth.middleware.js";
 
 const authRouter = Router();
 
@@ -43,6 +44,14 @@ authRouter.get('/google/callback',
     googleCallback
 )
 
+
+
+/**
+ * @routes GET /api/auth/me
+ * @description Get the user info
+ * @access Public
+ */
+authRouter.get('/me', authenticateUser, getMeController);
 
 
 export default authRouter;

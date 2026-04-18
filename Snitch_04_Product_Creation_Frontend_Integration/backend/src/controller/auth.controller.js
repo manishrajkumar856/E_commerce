@@ -105,3 +105,17 @@ export const googleCallback = async (req, res, next) => {
         res.redirect('http://localhost:5173/login');
     }        
 }
+
+export const getMeController = (req, res, next) => {
+    try {
+        const user = req.user;
+
+        return res.status(200).json({
+            success: true,
+            message: "Get User successfully",
+            user,
+        });
+    } catch (error) {
+        next();
+    }
+}
