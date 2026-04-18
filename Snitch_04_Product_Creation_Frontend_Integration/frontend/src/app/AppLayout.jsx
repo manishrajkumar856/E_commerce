@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Outlet } from 'react-router';
+import { useEffect, useState } from 'react';
+import Header from '../shared/components/Header';
 import ThemeToggle from '../shared/components/ThemeToggle';
+import { Outlet } from 'react-router';
+import Footer from '../shared/components/Footer';
 
 const AppLayout = () => {
   const [theme, setTheme] = useState(() => {
@@ -11,7 +13,9 @@ const AppLayout = () => {
     const root = window.document.documentElement;
     if (theme === 'dark') {
       root.classList.add('dark');
+      root.classList.remove('light');
     } else {
+      root.classList.add('light');
       root.classList.remove('dark');
     }
     localStorage.setItem('theme', theme);
@@ -22,11 +26,13 @@ const AppLayout = () => {
   };
 
   return (
-    <div className="min-h-screen transition-colors duration-300">
+    <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] transition-colors duration-500 flex flex-col">
+      <Header />
       <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
-      <main>
+      <main className="flex-grow pt-20">
         <Outlet />
       </main>
+      <Footer />
     </div>
   );
 };

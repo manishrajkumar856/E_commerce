@@ -2,7 +2,7 @@ import { useDispatch } from "react-redux"
 import { createProduct, getSellerProducts } from "../services/product.service";
 import { setSellerProducts } from "../state/product.slice";
 
-const useProduct = async () => {
+export const useProduct = () => {
     const dispatch = useDispatch();
 
     async function handleCreateProduct(formData) {

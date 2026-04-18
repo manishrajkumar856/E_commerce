@@ -2,32 +2,43 @@ import React, { useState, useEffect } from 'react';
 import LoginForm from '../components/LoginForm';
 import heroImageDark from '../../../assets/snitch_option_2_brutalist_1775871146592.png';
 import heroImageLight from '../../../assets/snitch_light_editorial.png';
+import { Link } from 'react-router';
 import ThemeToggle from '../../../shared/components/ThemeToggle';
 
 const LoginPage = () => {
   const [theme, setTheme] = useState('dark');
 
   useEffect(() => {
-    // Set initial theme
-    const root = document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-      root.classList.remove('light');
-    } else {
-      root.classList.add('light');
-      root.classList.remove('dark');
-    }
-  }, [theme]);
+    const isDark = document.documentElement.classList.contains('dark');
+    setTheme(isDark ? 'dark' : 'light');
+
+    const observer = new MutationObserver(() => {
+      const currentIsDark = document.documentElement.classList.contains('dark');
+      setTheme(currentIsDark ? 'dark' : 'light');
+    });
+
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
 
   const toggleTheme = () => {
-    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.classList.remove(theme);
+    document.documentElement.classList.add(newTheme);
+    localStorage.setItem('snitch-theme', newTheme);
+    setTheme(newTheme);
   };
 
   return (
     <div className="relative h-[100dvh] w-full flex flex-col lg:flex-row overflow-hidden bg-[var(--theme-bg)] transition-colors duration-700">
-      {/* Fixed Theme Toggle - Absolute Position */}
-      <div className="absolute top-8 right-8 z-50">
-        <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
+      {/* Absolute Header for Nav */}
+      <div className="absolute top-8 left-8 right-8 z-50 flex justify-between items-center pointer-events-none">
+        <Link to="/" className="pointer-events-auto p-2 text-[var(--theme-text-muted)] hover:text-primary transition-colors flex items-center gap-2">
+          <span className="text-[10px] font-bold tracking-[0.2em] uppercase">← Back</span>
+        </Link>
+        <div className="pointer-events-auto">
+          <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
+        </div>
       </div>
 
       {/* Left Side: Editorial Excellence (Desktop Only) */}
@@ -53,7 +64,7 @@ const LoginPage = () => {
       </div>
 
       {/* Right Side: High-Visibility Form Interface */}
-      <div className="w-full lg:w-1/2 h-full flex flex-col p-6 md:p-12 relative z-10 bg-[var(--theme-bg)] overflow-y-auto">
+      <div className="w-full lg:w-1/2 h-full flex flex-col p-4 md:p-6 relative z-10 bg-[var(--theme-bg)] overflow-y-auto">
         {/* Mobile-Only Hero Background (Subtle) */}
         <div className="lg:hidden absolute inset-0 z-0">
           <img

@@ -45,8 +45,8 @@ const LoginForm = () => {
   }
 
   return (
-    <div className="w-full max-w-lg px-8 py-10 animate-fade-up">
-      <div className="mb-10">
+    <div className="w-full max-w-lg px-8 py-6 animate-fade-up">
+      <div className="mb-6">
         <h2 className="text-4xl font-display font-black text-[var(--theme-text)] tracking-tightest mb-2">
           RESUME <span className="text-secondary text-glow-secondary">ACCESS</span>
         </h2>
@@ -64,7 +64,7 @@ const LoginForm = () => {
           <p className="text-sm text-[var(--theme-text)]/60">Welcome back. Redirecting...</p>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-xs font-bold animate-fade-in">
               {error}
@@ -115,7 +115,7 @@ const LoginForm = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-4.5 bg-primary-gradient text-black font-display font-black rounded-2xl shadow-xl shadow-primary/10 hover:shadow-primary/30 hover:-translate-y-1 active:scale-[0.98] transition-all duration-500 uppercase tracking-[0.2em] text-xs mt-6 flex items-center justify-center"
+            className="w-full py-4 bg-primary-gradient text-black font-display font-black rounded-2xl shadow-xl shadow-primary/10 hover:shadow-primary/30 hover:-translate-y-1 active:scale-[0.98] transition-all duration-500 uppercase tracking-[0.2em] text-xs mt-4 flex items-center justify-center"
           >
             {isLoading ? (
               <svg className="animate-spin h-5 w-5 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -147,7 +147,7 @@ const LoginForm = () => {
             <span className="text-[11px] font-bold text-[var(--theme-text)]/50 group-hover:text-[var(--theme-text)] transition-colors uppercase tracking-widest">Continue with Google</span>
           </button>
 
-          <p className="text-center text-[10px] font-bold text-[var(--theme-text)]/40 uppercase tracking-widest mt-6">
+          <p className="text-center text-[10px] font-bold text-[var(--theme-text)]/40 uppercase tracking-widest mt-4">
             New to the entity?{' '}
             <Link to="/register" className="text-primary hover:text-secondary transition-colors underline-offset-4 hover:underline">
               Join the Cult
