@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: "http://localhost:3000/api/products",
+    baseURL: "/api/products",
     withCredentials: true,
 });
 
@@ -11,6 +11,11 @@ export const createProduct = async (formData) => {
 };
 
 export const getSellerProducts = async () => {
-    const response = await api.get("/seller");
-    return response.data;
+    try {
+        const response = await api.get("/seller");
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching seller products:", error);
+        throw error;
+    }
 };

@@ -4,15 +4,20 @@ import AppLayout from "./AppLayout";
 import SignupPage from "../features/auth/pages/SignupPage";
 import LoginPage from "../features/auth/pages/LoginPage";
 import CreateProduct from "../features/products/pages/CreateProduct";
+import Dashboard from "../features/products/pages/Dashboard";
 
 const routes = createBrowserRouter([
     {
-        path: '/',
+        path: '/seller',
         element: <AppLayout />,
         children: [
             {
-                path: 'product',
+                path: 'create-product',
                 element: <CreateProduct />
+            },
+            {
+                path: 'dashboard',
+                element: <Dashboard />
             },
             {
                 index: true,
