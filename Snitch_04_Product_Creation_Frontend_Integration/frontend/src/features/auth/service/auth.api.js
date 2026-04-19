@@ -34,4 +34,13 @@ export const loginUser = async ({ email, password }) => {
     }
 }
 
+export const getMe = async () => {
+    try {
+        const response = await authApiInstance.get('/me');
+        return response.data;
+    } catch (error) {
+        throw error?.response?.data?.message || error.message;
+    }
+}
+
 export default authApiInstance;

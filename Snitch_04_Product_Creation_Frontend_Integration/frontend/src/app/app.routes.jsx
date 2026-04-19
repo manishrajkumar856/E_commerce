@@ -5,11 +5,12 @@ import SignupPage from "../features/auth/pages/SignupPage";
 import LoginPage from "../features/auth/pages/LoginPage";
 import CreateProduct from "../features/products/pages/CreateProduct";
 import Dashboard from "../features/products/pages/Dashboard";
+import App from "./App";
 
 const routes = createBrowserRouter([
     {
         path: '/seller',
-        element: <AppLayout />,
+        element: <App />,
         children: [
             {
                 path: 'create-product',

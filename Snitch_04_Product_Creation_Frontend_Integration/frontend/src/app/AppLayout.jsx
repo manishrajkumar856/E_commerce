@@ -3,8 +3,15 @@ import Header from '../shared/components/Header';
 import ThemeToggle from '../shared/components/ThemeToggle';
 import { Outlet } from 'react-router';
 import Footer from '../shared/components/Footer';
+import { useSelector } from 'react-redux';
+import { CloudCog } from 'lucide-react';
 
 const AppLayout = () => {
+
+  const user = useSelector(state => state.auth.user);
+
+  console.log(user);
+
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('theme') || 'dark';
   });
