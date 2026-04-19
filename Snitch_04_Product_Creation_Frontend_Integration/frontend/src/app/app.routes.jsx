@@ -6,8 +6,27 @@ import LoginPage from "../features/auth/pages/LoginPage";
 import CreateProduct from "../features/products/pages/CreateProduct";
 import Dashboard from "../features/products/pages/Dashboard";
 import App from "./App";
+import HomePage from "../features/products/pages/HomePage";
 
 const routes = createBrowserRouter([
+    {
+        path: '/',
+        element: <App />,
+        children: [
+            {
+                index: true,
+                element: <HomePage />
+            },
+            {
+                path: 'dashboard',
+                element: <Dashboard />
+            },
+            {
+                index: true,
+                element: <div className="p-24 text-center text-4xl font-display font-black italic">WELCOME TO THE <span className="text-primary text-glow-primary">CULT</span></div>
+            }
+        ]
+    },
     {
         path: '/seller',
         element: <App />,

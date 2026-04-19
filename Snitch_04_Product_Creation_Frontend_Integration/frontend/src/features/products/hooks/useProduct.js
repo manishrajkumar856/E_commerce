@@ -1,6 +1,6 @@
 import { useDispatch } from "react-redux"
-import { createProduct, getSellerProducts } from "../services/product.service";
-import { setSellerProducts } from "../state/product.slice";
+import { createProduct, getAllProducts, getSellerProducts } from "../services/product.service";
+import { setProducts, setSellerProducts } from "../state/product.slice";
 import { CloudCog } from "lucide-react";
 
 export const useProduct = () => {
@@ -25,5 +25,20 @@ export const useProduct = () => {
         return [];
     }
 
-    return { handleCreateProduct, handleGetSellerProduct };
+
+    async function handleGetAllProducts() {
+        try {
+            const data = await getAllProducts();
+            if (data && data.products) {
+                dispatch(setProducts(data.products));
+                console.log("Fetched Products:", data.products);
+                return data.products;
+            }
+        } catch (error) {
+            console.error("Failed to load all products:", error);
+        }
+        return [];
+    }
+
+    return { handleCreateProduct, handleGetSellerProduct, handleGetAllProducts };
 }
