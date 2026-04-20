@@ -1,5 +1,4 @@
 import axios from "axios";
-import { CloudCog } from "lucide-react";
 
 const api = axios.create({
     baseURL: "/api/products",
@@ -21,7 +20,6 @@ export const getSellerProducts = async () => {
     }
 };
 
-
 export const getAllProducts = async () => {
     try {
         const response = await api.get("/");
@@ -30,10 +28,9 @@ export const getAllProducts = async () => {
         console.error("Error fetching all products:", error);
         throw error;
     }
-}
+};
 
 export const getProductById = async (id) => {
-    console.log("IDs:", id);
     try {
         const response = await api.get(`/${id}`);
         return response.data;
@@ -41,4 +38,9 @@ export const getProductById = async (id) => {
         console.error("Error fetching product by id:", error);
         throw error;
     }
-}
+};
+
+export const addVariant = async (id, variantData) => {
+    const response = await api.post(`/${id}/variants`, variantData);
+    return response.data;
+};

@@ -1,7 +1,6 @@
-import { useDispatch } from "react-redux"
-import { createProduct, getAllProducts, getProductById, getSellerProducts } from "../services/product.service";
+import { useDispatch } from "react-redux";
+import { createProduct, getAllProducts, getProductById, getSellerProducts, addVariant } from "../services/product.service";
 import { setProducts, setSellerProducts } from "../state/product.slice";
-import { CloudCog } from "lucide-react";
 
 export const useProduct = () => {
     const dispatch = useDispatch();
@@ -16,7 +15,6 @@ export const useProduct = () => {
             const data = await getSellerProducts();
             if (data && data.products) {
                 dispatch(setSellerProducts(data.products));
-                console.log("Fetched Products:", data.products);
                 return data.products;
             }
         } catch (error) {
@@ -25,13 +23,11 @@ export const useProduct = () => {
         return [];
     }
 
-
     async function handleGetAllProducts() {
         try {
             const data = await getAllProducts();
             if (data && data.products) {
                 dispatch(setProducts(data.products));
-                console.log("Fetched Products:", data.products);
                 return data.products;
             }
         } catch (error) {
@@ -41,7 +37,6 @@ export const useProduct = () => {
     }
 
     async function handleGetProductById(id) {
-        console.log("ID:", id);
         try {
             const data = await getProductById(id);
             if (data) {
@@ -53,5 +48,21 @@ export const useProduct = () => {
         return null;
     }
 
-    return { handleCreateProduct, handleGetSellerProduct, handleGetAllProducts, handleGetProductById };
-}
+    async function handleAddVariant(id, variantData) {
+        try {
+            const data = await addVariant(id, variantData);
+            return data;
+        } catch (error) {
+            console.error("Failed to add variant:", error);
+            throw error;
+        }
+    }
+
+    return {
+        handleCreateProduct,
+        handleGetSellerProduct,
+        handleGetAllProducts,
+        handleGetProductById,
+        handleAddVariant,
+    };
+};
