@@ -8,6 +8,7 @@ import Dashboard from "../features/products/pages/Dashboard";
 import App from "./App";
 import HomePage from "../features/products/pages/HomePage";
 import ProductDetailsPage from "../features/products/pages/ProductDetailsPage";
+import SellerProductDetailsPage from "../features/products/pages/SellerProductDetailsPage";
 
 const routes = createBrowserRouter([
     {
@@ -26,10 +27,6 @@ const routes = createBrowserRouter([
                 path: 'dashboard',
                 element: <Dashboard />
             },
-            {
-                index: true,
-                element: <div className="p-24 text-center text-4xl font-display font-black italic">WELCOME TO THE <span className="text-primary text-glow-primary">CULT</span></div>
-            }
         ]
     },
 
@@ -44,6 +41,10 @@ const routes = createBrowserRouter([
             {
                 path: 'dashboard',
                 element: <Dashboard />
+            },
+            {
+                path: 'products/:id',
+                element: <SellerProductDetailsPage />
             },
             {
                 index: true,
@@ -61,4 +62,4 @@ const routes = createBrowserRouter([
     }
 ]);
 
-export default routes;  
+export default routes;

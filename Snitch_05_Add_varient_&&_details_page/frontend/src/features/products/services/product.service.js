@@ -41,6 +41,7 @@ export const getProductById = async (id) => {
 };
 
 export const addVariant = async (id, variantData) => {
-    const response = await api.post(`/${id}/variants`, variantData);
+    console.log(id, variantData);
+    const response = await api.post(`/${id}/addVarient`, variantData);
     return response.data;
 };

@@ -99,8 +99,10 @@ export const addProductVarient = async (req, res, next) => {
       seller: req.user._id
     });
 
+    console.log(product);
+
     if(!product){
-      return res.status(404).json({
+      return res.status(400).json({
         success: false,
         message: "Product not found!"
       })
@@ -139,6 +141,9 @@ export const addProductVarient = async (req, res, next) => {
     })
     
   } catch (error) {
-    next();
+    console.log(error);
+    const err = new Error('Internal Server Error');
+    err.statusCode = 500;
+    return next(err);
   }
 }
