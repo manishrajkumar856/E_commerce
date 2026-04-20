@@ -7,6 +7,7 @@ import CreateProduct from "../features/products/pages/CreateProduct";
 import Dashboard from "../features/products/pages/Dashboard";
 import App from "./App";
 import HomePage from "../features/products/pages/HomePage";
+import ProductDetailsPage from "../features/products/pages/ProductDetailsPage";
 
 const routes = createBrowserRouter([
     {
@@ -18,6 +19,10 @@ const routes = createBrowserRouter([
                 element: <HomePage />
             },
             {
+                path: 'products/:id',
+                element: <ProductDetailsPage />
+            },
+            {
                 path: 'dashboard',
                 element: <Dashboard />
             },
@@ -27,6 +32,7 @@ const routes = createBrowserRouter([
             }
         ]
     },
+
     {
         path: '/seller',
         element: <App />,

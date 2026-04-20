@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authenticateSeller } from '../middleware/auth.middleware.js';
 import upload from '../middleware/storage.middleware.js';
-import { createProduct, getAllProduct, getSellerProducts } from '../controller/product.controller.js';
+import { createProduct, getAllProduct, getProductById, getSellerProducts } from '../controller/product.controller.js';
 import { productValidator } from '../validator/product.validator.js';
 
 
@@ -31,5 +31,16 @@ productRouter.get('/seller', authenticateSeller, getSellerProducts);
  * @access Public
  */
 productRouter.get('/', getAllProduct);
+
+
+
+/**
+ * @routes GET /api/products/
+ * @description Get single product
+ * @access Public
+ */
+productRouter.get('/:productId', getProductById);
+
+
 
 export default productRouter;

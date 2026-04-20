@@ -32,6 +32,31 @@ const productSchema = mongoose.Schema({
                 required: true,
             }
         }
+    ],
+    varients: [
+        {
+            images: [
+                {
+                    url: {
+                        type: String,
+                        required: true,
+                    }
+                }
+            ],
+            stock: {
+                type: Number,
+                default: 0,
+            },
+            attributes: {
+                type: Map,
+                of: String,
+            },
+            price: {
+                type: String,
+                enum: ['USD', 'EUR', 'GBP', 'JPY', 'INR'],
+                default: 'INR'
+            }
+        }
     ]
 }, 
 {
