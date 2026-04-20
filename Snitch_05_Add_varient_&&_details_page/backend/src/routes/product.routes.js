@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authenticateSeller } from '../middleware/auth.middleware.js';
 import upload from '../middleware/storage.middleware.js';
-import { createProduct, getAllProduct, getProductById, getSellerProducts } from '../controller/product.controller.js';
+import { addProductVarient, createProduct, getAllProduct, getProductById, getSellerProducts } from '../controller/product.controller.js';
 import { productValidator } from '../validator/product.validator.js';
 
 
@@ -40,6 +40,15 @@ productRouter.get('/', getAllProduct);
  * @access Public
  */
 productRouter.get('/:productId', getProductById);
+
+
+
+/**
+ * @routes GET /api/products/:productId/addVarient
+ * @description Add new varient to the  product
+ * @access Public
+ */
+productRouter.post('/:productId/addVarient', authenticateSeller, upload.array('images', 7), addProductVarient);
 
 
 

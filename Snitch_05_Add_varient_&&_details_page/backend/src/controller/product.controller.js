@@ -1,3 +1,4 @@
+import { json } from "express";
 import productModel from "../model/product.model.js";
 import { uploadFile } from "../service/storage.service.js";
 
@@ -84,6 +85,59 @@ export const getProductById = async (req, res, next) => {
       message: "Product fetched successfully!",
       product,
     })
+  } catch (error) {
+    next();
+  }
+}
+
+export const addProductVarient = async (req, res, next) => {
+  try {
+    const productId = req.params.productId;
+
+    const product = await productModel.findOne({
+      _id: productId,
+      seller: req.user._id
+    });
+
+    if(!product){
+      return res.status(404).json({
+        success: false,
+        message: "Product not found!"
+      })
+    }
+
+    const files = req.files;
+    const images = [];
+
+    if(files || files.length !== 0){
+      (await Promise.all(files.map( async (file) => {
+        const image = await uploadFile({buffer: file.buffer, fileName: file.originalname});
+        return image;
+      }))).map((image) => images.push(image));
+    }
+
+    const price = req.body.priceAmount;
+    const stock = req.body.stock;
+    const attributes = JSON.parse(req.body.attributes || '{}');
+
+    product.varients.push({
+      images,
+      stock,
+      price: {
+        amount: Number(price) || product.price.amount,
+        currency: req.body.priceCurrency || product.price.currency,
+      },
+      attributes,
+    });
+
+    await product.save();
+
+    return res.status(201).json({
+      success: true,
+      message: "Varient added successfully!",
+      product,
+    })
+    
   } catch (error) {
     next();
   }
