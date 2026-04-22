@@ -32,5 +32,9 @@ export const productValidator = [
     .notEmpty()
     .withMessage('Price currency is required!'),
 
+    body('stock')
+    .notEmpty()
+    .withMessage("Stock is required!"),
+
     validateResult
 ]

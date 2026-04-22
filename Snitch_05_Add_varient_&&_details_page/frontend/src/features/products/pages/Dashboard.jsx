@@ -37,8 +37,11 @@ const Dashboard = () => {
 
     // Calculate Stats
     const totalProducts = sellerProducts?.length || 0;
-    const totalValue = sellerProducts?.reduce((acc, curr) => acc + (Number(curr.price?.amount) || 0), 0) || 0;
-    const currency = sellerProducts?.[0]?.price?.currency || 'INR';
+    const totalValue = sellerProducts?.reduce((acc, curr) => {
+        const productPrice = curr.price?.amount || curr.variants?.[0]?.price?.amount || 0;
+        return acc + (Number(productPrice) || 0);
+    }, 0) || 0;
+    const currency = sellerProducts?.[0]?.price?.currency || sellerProducts?.[0]?.variants?.[0]?.price?.currency || 'INR';
 
     const filteredProducts = sellerProducts?.filter(p =>
         p.title?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -62,7 +65,7 @@ const Dashboard = () => {
             {/* Image */}
             <div className="aspect-[3/4] relative overflow-hidden bg-[var(--theme-bg)]">
                 <img
-                    src={product.images?.[0]?.url || 'https://via.placeholder.com/400x500?text=No+Image'}
+                    src={product.images?.[0]?.url || product.variants?.[0]?.images?.[0]?.url || 'https://via.placeholder.com/400x500?text=No+Image'}
                     alt={product.title}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
@@ -105,8 +108,8 @@ const Dashboard = () => {
                 </div>
                 <div className="flex items-center justify-between pt-3 border-t border-[var(--theme-border)]">
                     <span className="font-black text-primary text-lg">
-                        {product.price?.currency === 'INR' ? '₹' : product.price?.currency}
-                        {product.price?.amount?.toLocaleString()}
+                        {(product.price?.currency || product.variants?.[0]?.price?.currency) === 'INR' ? '₹' : (product.price?.currency || product.variants?.[0]?.price?.currency)}
+                        {(product.price?.amount || product.variants?.[0]?.price?.amount)?.toLocaleString()}
                     </span>
                     <div className="text-[9px] font-black text-[var(--theme-text-muted)] uppercase tracking-widest">
                         {product.variants?.length || 0} variants
@@ -269,7 +272,7 @@ const Dashboard = () => {
                                                             <Link to={`/seller/products/${product._id}`} className="flex items-center gap-5">
                                                                 <div className="w-16 h-20 rounded-2xl overflow-hidden bg-[var(--theme-bg)] shrink-0 group-hover:scale-105 transition-transform duration-500 border border-[var(--theme-border)] group-hover:border-primary/30">
                                                                     <img
-                                                                        src={product.images?.[0]?.url || 'https://via.placeholder.com/600'}
+                                                                        src={product.images?.[0]?.url || product.variants?.[0]?.images?.[0]?.url || 'https://via.placeholder.com/600'}
                                                                         className="w-full h-full object-cover"
                                                                         alt=""
                                                                     />
@@ -289,7 +292,9 @@ const Dashboard = () => {
                                                         </td>
                                                         <td className="px-8 py-6">
                                                             <div className="flex flex-col">
-                                                                <span className="text-sm font-black tracking-tight">{product.price?.currency} {product.price?.amount}</span>
+                                                                <span className="text-sm font-black tracking-tight">
+                                                                    {product.price?.currency || product.variants?.[0]?.price?.currency} {product.price?.amount || product.variants?.[0]?.price?.amount}
+                                                                </span>
                                                                 <span className="text-[9px] font-bold text-primary uppercase tracking-widest">Base Rate</span>
                                                             </div>
                                                         </td>

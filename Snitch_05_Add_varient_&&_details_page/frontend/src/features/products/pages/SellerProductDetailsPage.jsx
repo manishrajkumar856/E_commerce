@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, Link } from "react-router";
 import { useProduct } from "../hooks/useProduct";
 import { useSelector } from "react-redux";
@@ -21,18 +21,31 @@ const SellerProductDetailsPage = () => {
     const { handleGetProductById, handleGetAllProducts, handleAddVariant } = useProduct();
     const [product, setProduct] = useState(null);
     const allProducts = useSelector(state => state.product.products);
+    const currentUser = useSelector(state => state.auth.user);
 
     const [activeImage, setActiveImage] = useState(0);
     const [loading, setLoading] = useState(true);
     const [isVariantFormOpen, setVariantFormOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [successMsg, setSuccessMsg] = useState("");
+    const [selectedAttributes, setSelectedAttributes] = useState({});
 
     const fetchProduct = async () => {
         setLoading(true);
         const data = await handleGetProductById(id);
-        // handleGetProductById may return array (same as ProductDetailsPage) or object
-        setProduct(Array.isArray(data) ? data[0] : data);
+        const productData = Array.isArray(data) ? data[0] : data;
+        setProduct(productData);
+
+        // Set default attributes from the first variant
+        const productVariants = productData?.varients || productData?.variants || [];
+        if (productVariants.length > 0 && productVariants[0].attributes) {
+            const initialAttrs = {};
+            Object.entries(productVariants[0].attributes).forEach(([k, v]) => {
+                initialAttrs[k.toUpperCase()] = v.toString().toUpperCase();
+            });
+            setSelectedAttributes(initialAttrs);
+        }
+
         await handleGetAllProducts();
         setLoading(false);
     };
@@ -41,6 +54,100 @@ const SellerProductDetailsPage = () => {
         fetchProduct();
         window.scrollTo(0, 0);
     }, [id]);
+
+    const variants = product?.varients || product?.variants || [];
+    const variantCount = variants.length;
+
+    // Extract unique attribute keys and their values
+    const attributeOptions = useMemo(() => {
+        const options = {};
+        variants.forEach(variant => {
+            if (variant.attributes) {
+                Object.entries(variant.attributes).forEach(([key, value]) => {
+                    const normalizedKey = key.toUpperCase();
+                    const normalizedValue = value.toString().toUpperCase();
+                    if (!options[normalizedKey]) options[normalizedKey] = new Set();
+                    options[normalizedKey].add(normalizedValue);
+                });
+            }
+        });
+        const result = {};
+        Object.keys(options).forEach(key => {
+            result[key] = Array.from(options[key]);
+        });
+        return result;
+    }, [variants]);
+
+    const attributeKeys = Object.keys(attributeOptions);
+
+    const isOptionAvailable = (key, value) => {
+        const targetKey = key.toUpperCase();
+        const targetValue = value.toUpperCase();
+
+        return variants.some(variant => {
+            if (!variant.attributes) return false;
+            
+            // Normalize current variant attribute values
+            const vAttrs = Object.fromEntries(
+                Object.entries(variant.attributes).map(([k, v]) => [k.toUpperCase(), v.toString().toUpperCase()])
+            );
+
+            if (vAttrs[targetKey] !== targetValue) return false;
+            
+            // Check all other selected attributes
+            return Object.entries(selectedAttributes).every(([sKey, sValue]) => {
+                if (!sValue || sKey.toUpperCase() === targetKey) return true;
+                return vAttrs[sKey.toUpperCase()] === sValue.toUpperCase();
+            });
+        });
+    };
+
+    // Find selected variant
+    const selectedVariant = useMemo(() => {
+        if (attributeKeys.length === 0) return null;
+        return variants.find(variant => {
+            if (!variant.attributes) return false;
+            return attributeKeys.every(key => {
+                const selectedValue = selectedAttributes[key];
+                if (!selectedValue) return false;
+                
+                const vAttrKey = Object.keys(variant.attributes).find(k => k.toUpperCase() === key.toUpperCase());
+                if (!vAttrKey) return false;
+                
+                return variant.attributes[vAttrKey].toString().toUpperCase() === selectedValue.toUpperCase();
+            });
+        });
+    }, [selectedAttributes, variants, attributeKeys]);
+
+    const handleAttributeSelect = (key, value) => {
+        setSelectedAttributes(prev => {
+            const nextValue = prev[key] === value ? undefined : value;
+            const newAttributes = { ...prev, [key]: nextValue };
+
+            // If we selected a value, ensure other selections are still valid
+            if (nextValue) {
+                attributeKeys.forEach(k => {
+                    if (k === key || !newAttributes[k]) return;
+                    
+                    const targetK = k.toUpperCase();
+                    const targetV = newAttributes[k].toUpperCase();
+                    const targetKey = key.toUpperCase();
+                    const targetNextValue = nextValue.toUpperCase();
+
+                    const stillValid = variants.some(v => {
+                        if (!v.attributes) return false;
+                        const vAttrs = Object.fromEntries(
+                            Object.entries(v.attributes).map(([attrK, attrV]) => [attrK.toUpperCase(), attrV.toString().toUpperCase()])
+                        );
+                        return vAttrs[targetKey] === targetNextValue && vAttrs[targetK] === targetV;
+                    });
+
+                    if (!stillValid) newAttributes[k] = undefined;
+                });
+            }
+            return newAttributes;
+        });
+    };
 
     const recommendedItems = allProducts
         ? allProducts.filter(p => p._id !== id).slice(0, 4)
@@ -80,19 +187,18 @@ const SellerProductDetailsPage = () => {
         );
     }
 
-    const variantCount = product.variants?.length || 0;
+    const defaultVariant = variants[0];
+    const displayedPrice = selectedVariant?.price || product.price || defaultVariant?.price;
+    const currentImages = (selectedVariant?.images?.length > 0 ? selectedVariant.images : (product.images?.length > 0 ? product.images : defaultVariant?.images)) || [];
 
     return (
         <div className="min-h-screen bg-[var(--theme-bg)] pb-32">
-
-            {/* Success Toast */}
             {successMsg && (
                 <div className="fixed top-6 right-6 z-50 px-6 py-4 bg-primary text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-2xl shadow-primary/30 animate-fade-in">
                     {successMsg}
                 </div>
             )}
 
-            {/* Breadcrumbs — same as ProductDetailsPage */}
             <div className="pt-24 px-6 md:px-12 lg:px-24">
                 <nav className="flex items-center gap-2 text-xs font-bold tracking-widest uppercase text-[var(--theme-text-muted)] mb-12">
                     <Link to="/seller/dashboard" className="hover:text-primary transition-colors">Dashboard</Link>
@@ -103,14 +209,11 @@ const SellerProductDetailsPage = () => {
                 </nav>
             </div>
 
-            {/* Main Content — identical layout to ProductDetailsPage */}
             <div className="px-6 md:px-12 lg:px-24 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24">
-
-                {/* Image Gallery — exact copy */}
+                {/* Image Gallery */}
                 <div className="lg:col-span-7 flex flex-col-reverse md:flex-row gap-6">
-                    {/* Thumbnails */}
                     <div className="flex md:flex-col gap-4 overflow-x-auto md:overflow-visible no-scrollbar">
-                        {product.images?.map((img, idx) => (
+                        {currentImages?.map((img, idx) => (
                             <button
                                 key={idx}
                                 onClick={() => setActiveImage(idx)}
@@ -121,14 +224,12 @@ const SellerProductDetailsPage = () => {
                         ))}
                     </div>
 
-                    {/* Main Image */}
                     <div className="flex-1 aspect-[3/4] overflow-hidden bg-[var(--theme-card-bg)] rounded-2xl group border border-[var(--theme-border)] relative">
                         <img
-                            src={product.images?.[activeImage]?.url}
+                            src={currentImages?.[activeImage]?.url}
                             alt={product.title}
                             className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                         />
-                        {/* Seller badge overlay — only difference from consumer page */}
                         <div className="absolute top-4 left-4">
                             <span className="px-3 py-1.5 bg-black/60 backdrop-blur-md text-primary text-[9px] font-black uppercase tracking-widest rounded-full">
                                 Your Product
@@ -137,7 +238,7 @@ const SellerProductDetailsPage = () => {
                     </div>
                 </div>
 
-                {/* Product Info — same structure as ProductDetailsPage */}
+                {/* Product Info */}
                 <div className="lg:col-span-5 flex flex-col pt-4">
                     <div className="mb-8">
                         <span className="inline-block px-4 py-1.5 bg-primary/10 text-primary text-[10px] font-black tracking-[0.2em] uppercase rounded-full mb-6">
@@ -148,10 +249,48 @@ const SellerProductDetailsPage = () => {
                         </h1>
                         <div className="flex items-center gap-4">
                             <span className="font-sans text-4xl font-black text-primary">
-                                {product.price?.currency === 'INR' ? '₹' : product.price?.currency} {product.price?.amount?.toLocaleString()}
+                                {displayedPrice?.currency === 'INR' ? '₹' : displayedPrice?.currency} {displayedPrice?.amount?.toLocaleString()}
                             </span>
                         </div>
                     </div>
+
+                    {/* Attribute Selection Preview */}
+                    {attributeKeys.length > 0 && (
+                        <div className="space-y-8 mb-10">
+                            {attributeKeys.map(key => (
+                                <div key={key} className="space-y-4">
+                                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--theme-text-muted)]">
+                                        Preview {key}
+                                    </h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {attributeOptions[key].map(value => {
+                                            const isSelected = selectedAttributes[key] === value;
+                                            const isAvailable = isOptionAvailable(key, value);
+                                            
+                                            return (
+                                                <button
+                                                    key={value}
+                                                    onClick={() => handleAttributeSelect(key, value)}
+                                                    className={`
+                                                        px-5 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl border-2 transition-all duration-300
+                                                        ${isSelected 
+                                                            ? 'border-primary bg-primary text-white shadow-lg shadow-primary/25' 
+                                                            : isAvailable
+                                                                ? 'border-[var(--theme-border)] text-[var(--theme-text)] hover:border-primary/50 bg-[var(--theme-card-bg)]'
+                                                                : 'border-[var(--theme-border)] text-[var(--theme-text-muted)] opacity-40 bg-[var(--theme-bg)]'
+                                                        }
+                                                    `}
+                                                >
+                                                    {!isAvailable && !isSelected && <span className="mr-2 opacity-30">✕</span>}
+                                                    {value}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
 
                     <div className="bg-[var(--theme-card-bg)] border border-[var(--theme-border)] rounded-2xl p-6 mb-8">
                         <h4 className="text-xs font-black uppercase tracking-widest text-[var(--theme-text)] mb-3">Manifesto</h4>
@@ -160,39 +299,24 @@ const SellerProductDetailsPage = () => {
                         </p>
                     </div>
 
-                    {/* ── ACTIONS ── */}
+                    {/* ACTIONS */}
                     <div className="flex flex-col gap-4 mb-12">
-
-                        {/* ── PRIMARY: Add Variant — active & primary ── */}
                         <button
                             onClick={() => setVariantFormOpen(true)}
-                            className="flex items-center justify-center gap-3 w-full py-5 bg-primary text-white font-black tracking-widest uppercase text-sm hover:bg-primary-dark transition-all rounded-2xl shadow-xl shadow-primary/20"
+                            className="flex items-center justify-center gap-3 w-full py-5 bg-primary text-white font-black tracking-widest uppercase text-sm hover:bg-primary-dark transition-all rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95"
                         >
                             <Plus className="w-5 h-5" />
                             Add Variant
                         </button>
 
-                        {/* ── DISABLED: Acquire Item (same as "Acquire Item" in ProductDetailsPage) ── */}
                         <button
                             disabled
-                            className="flex items-center justify-center gap-3 w-full py-5 bg-[var(--theme-card-bg)] text-[var(--theme-text-muted)] font-black tracking-widest uppercase text-sm rounded-2xl border border-[var(--theme-border)] cursor-not-allowed opacity-50 line-through"
-                            title="Sellers cannot purchase their own products"
+                            className="flex items-center justify-center gap-3 w-full py-5 bg-[var(--theme-card-bg)] text-[var(--theme-text-muted)] font-black tracking-widest uppercase text-sm rounded-2xl border border-[var(--theme-border)] cursor-not-allowed opacity-40"
                         >
                             <ShoppingBag className="w-5 h-5" />
-                            Acquire Item
+                            Own Product
                         </button>
 
-                        {/* ── DISABLED: Add to Registry ── */}
-                        <button
-                            disabled
-                            className="flex items-center justify-center gap-3 w-full py-5 border border-[var(--theme-border)] text-[var(--theme-text-muted)] font-black tracking-widest uppercase text-sm rounded-2xl cursor-not-allowed opacity-50"
-                            title="Sellers cannot add their own products to registry"
-                        >
-                            <Heart className="w-5 h-5" />
-                            Add to Registry
-                        </button>
-
-                        {/* Disabled notice */}
                         <p className="text-center text-[10px] text-[var(--theme-text-muted)] uppercase tracking-widest">
                             Purchase actions are disabled for your own products
                         </p>
@@ -203,17 +327,17 @@ const SellerProductDetailsPage = () => {
                         <div className="bg-[var(--theme-card-bg)] border border-[var(--theme-border)] rounded-2xl p-6 mb-8">
                             <div className="flex items-center gap-3 mb-4">
                                 <Layers className="w-4 h-4 text-primary" />
-                                <h4 className="text-xs font-black uppercase tracking-widest text-[var(--theme-text)]">Variant Overview</h4>
+                                <h4 className="text-xs font-black uppercase tracking-widest text-[var(--theme-text)]">Inventory Overview</h4>
                             </div>
                             <div className="space-y-3">
-                                {product.variants.slice(0, 3).map((v, i) => (
+                                {variants.slice(0, 3).map((v, i) => (
                                     <div key={i} className="flex items-center justify-between py-2 border-b border-[var(--theme-border)] last:border-0">
                                         <div className="flex items-center gap-3">
                                             <div className="w-8 h-10 rounded overflow-hidden border border-[var(--theme-border)]">
                                                 <img src={v.images?.[0]?.url || product.images?.[0]?.url} alt="" className="w-full h-full object-cover" />
                                             </div>
                                             <span className="text-[10px] font-black uppercase tracking-widest">
-                                                {v.attributes?.map(a => a.value).join(' · ') || `Config #${i + 1}`}
+                                                {v.attributes ? Object.values(v.attributes).join(' · ') : `Config #${i + 1}`}
                                             </span>
                                         </div>
                                         <span className="text-[10px] font-bold text-primary uppercase tracking-widest">{v.stock ?? 0} in stock</span>
@@ -226,7 +350,7 @@ const SellerProductDetailsPage = () => {
                         </div>
                     )}
 
-                    {/* Meta Info — same as ProductDetailsPage */}
+                    {/* Meta Info */}
                     <div className="grid grid-cols-2 gap-4 pb-12 border-b border-[var(--theme-border)] mb-12">
                         <div className="flex items-center gap-3 text-[var(--theme-text-muted)]">
                             <Truck className="w-4 h-4 text-primary" />
@@ -242,13 +366,12 @@ const SellerProductDetailsPage = () => {
                         </div>
                         <div className="flex items-center gap-3 text-[var(--theme-text-muted)]">
                             <Share2 className="w-4 h-4 text-primary" />
-                            <span className="text-[10px] font-bold uppercase tracking-tighter">Share & Promote</span>
+                            <span className="text-[10px] font-bold uppercase tracking-tighter">Promote Drop</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Recommended Items — same as ProductDetailsPage */}
             <div className="mt-32 px-6 md:px-12 lg:px-24">
                 <div className="max-w-screen-2xl mx-auto">
                     <div className="flex items-end justify-between gap-8 mb-16">
@@ -271,12 +394,12 @@ const SellerProductDetailsPage = () => {
                 </div>
             </div>
 
-            {/* Add Variant Form Modal */}
             <AddVariantForm
                 isOpen={isVariantFormOpen}
                 onClose={() => setVariantFormOpen(false)}
                 onSubmit={onAddVariant}
                 isSubmitting={isSubmitting}
+                existingVariants={variants}
             />
         </div>
     );

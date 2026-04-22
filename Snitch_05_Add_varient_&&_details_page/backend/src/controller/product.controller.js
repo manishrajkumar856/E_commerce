@@ -3,8 +3,10 @@ import productModel from "../model/product.model.js";
 import { uploadFile } from "../service/storage.service.js";
 
 export const createProduct = async (req, res, next) => {
-  const { title, description, priceAmount, priceCurrency } = req.body;
+  const { title, description, priceAmount, priceCurrency, stock, attributes } = req.body;
   const seller = req.user;
+
+  console.log(attributes);
 
   try {
     const images = await Promise.all(
@@ -20,11 +22,17 @@ export const createProduct = async (req, res, next) => {
       title,
       description,
       seller: seller._id,
-      price: {
-        amount: priceAmount,
-        currency: priceCurrency,
-      },
-      images,
+      variants: [
+        {
+          images,
+          stock,
+          attributes : JSON.parse(req.body.attributes || '{}'),
+          price: {
+            currency: priceCurrency,
+            amount: priceAmount,
+          }
+        }
+      ]
     });
 
     return res.status(201).json({
@@ -33,7 +41,10 @@ export const createProduct = async (req, res, next) => {
       product,
     });
   } catch (error) {
-    next();
+    console.log(error);
+    const err = new Error("Internal Server Error!");
+    err.statusCode = 500;
+    next(err);
   }
 };
 
@@ -118,19 +129,25 @@ export const addProductVarient = async (req, res, next) => {
       }))).map((image) => images.push(image));
     }
 
-    const price = req.body.priceAmount;
+    console.log(req.body);
+    const price = JSON.parse(req.body.price);
     const stock = req.body.stock;
     const attributes = JSON.parse(req.body.attributes || '{}');
 
-    product.varients.push({
+    console.log("Hello",price);
+
+    product.variants.push({
       images,
       stock,
       price: {
-        amount: Number(price) || product.price.amount,
-        currency: req.body.priceCurrency || product.price.currency,
+        amount: Number(price.amount) || product.price.amount,
+        currency: price.currency || product.price.currency,
       },
       attributes,
     });
+
+    console.log(product);
+  
 
     await product.save();
 

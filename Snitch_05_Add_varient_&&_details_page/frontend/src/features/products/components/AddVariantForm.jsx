@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { X, UploadCloud, Trash2, Package, DollarSign, Tag, ChevronDown } from 'lucide-react';
 
-const AddVariantForm = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
+const AddVariantForm = ({ isOpen, onClose, onSubmit, isSubmitting, existingVariants = [] }) => {
     const [images, setImages] = useState([]);
     const [stock, setStock] = useState('');
     const [priceAmount, setPriceAmount] = useState('');
@@ -42,6 +42,25 @@ const AddVariantForm = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
         setAttributes(prev => prev.filter((_, i) => i !== index));
     };
 
+    // Get unique existing keys and values for suggestions
+    const suggestions = (() => {
+        const keys = new Set();
+        const values = {};
+        existingVariants.forEach(v => {
+            if (v.attributes) {
+                Object.entries(v.attributes).forEach(([k, val]) => {
+                    keys.add(k);
+                    if (!values[k]) values[k] = new Set();
+                    values[k].add(val);
+                });
+            }
+        });
+        return {
+            keys: Array.from(keys),
+            values: Object.fromEntries(Object.entries(values).map(([k, v]) => [k, Array.from(v)]))
+        };
+    })();
+
     const handleSubmit = (e) => {
         e.preventDefault();
         const formData = new FormData();
@@ -52,7 +71,8 @@ const AddVariantForm = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
         }
         const filteredAttributes = attributes.filter(a => a.key.trim() && a.value.trim());
         if (filteredAttributes.length > 0) {
-            formData.append('attributes', JSON.stringify(filteredAttributes));
+            const attributesObject = Object.fromEntries(filteredAttributes.map(a => [a.key.trim(), a.value.trim()]));
+            formData.append('attributes', JSON.stringify(attributesObject));
         }
         onSubmit(formData);
     };
@@ -166,18 +186,30 @@ const AddVariantForm = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
                                 <div className="space-y-3">
                                     {attributes.map((attr, idx) => (
                                         <div key={idx} className="flex gap-2 items-center group">
-                                            <input
-                                                placeholder="KEY (e.g. SIZE)"
-                                                value={attr.key}
-                                                onChange={e => updateAttribute(idx, 'key', e.target.value)}
-                                                className="flex-1 bg-transparent border-b border-[var(--theme-border)] py-2.5 text-[11px] font-bold uppercase tracking-widest focus:border-primary outline-none transition-colors placeholder:text-[var(--theme-text-muted)]/30"
-                                            />
-                                            <input
-                                                placeholder="VALUE (e.g. XL)"
-                                                value={attr.value}
-                                                onChange={e => updateAttribute(idx, 'value', e.target.value)}
-                                                className="flex-1 bg-transparent border-b border-[var(--theme-border)] py-2.5 text-[11px] font-bold uppercase tracking-widest focus:border-primary outline-none transition-colors placeholder:text-[var(--theme-text-muted)]/30"
-                                            />
+                                            <div className="flex-1 relative">
+                                                <input
+                                                    placeholder="KEY (e.g. SIZE)"
+                                                    value={attr.key}
+                                                    onChange={e => updateAttribute(idx, 'key', e.target.value.toUpperCase())}
+                                                    className="w-full bg-transparent border-b border-[var(--theme-border)] py-2.5 text-[11px] font-bold uppercase tracking-widest focus:border-primary outline-none transition-colors placeholder:text-[var(--theme-text-muted)]/30"
+                                                    list={`keys-list-${idx}`}
+                                                />
+                                                <datalist id={`keys-list-${idx}`}>
+                                                    {suggestions.keys.map(k => <option key={k} value={k} />)}
+                                                </datalist>
+                                            </div>
+                                            <div className="flex-1 relative">
+                                                <input
+                                                    placeholder="VALUE (e.g. XL)"
+                                                    value={attr.value}
+                                                    onChange={e => updateAttribute(idx, 'value', e.target.value.toUpperCase())}
+                                                    className="w-full bg-transparent border-b border-[var(--theme-border)] py-2.5 text-[11px] font-bold uppercase tracking-widest focus:border-primary outline-none transition-colors placeholder:text-[var(--theme-text-muted)]/30"
+                                                    list={`values-list-${idx}-${attr.key}`}
+                                                />
+                                                <datalist id={`values-list-${idx}-${attr.key}`}>
+                                                    {suggestions.values[attr.key]?.map(v => <option key={v} value={v} />)}
+                                                </datalist>
+                                            </div>
                                             <button type="button" onClick={() => removeAttribute(idx)} className="p-1.5 opacity-0 group-hover:opacity-100 text-red-400 transition-all">
                                                 <Trash2 className="w-3.5 h-3.5" />
                                             </button>

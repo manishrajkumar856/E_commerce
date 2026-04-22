@@ -12,6 +12,8 @@ const CreateProduct = () => {
     const [priceAmount, setPriceAmount] = useState("");
     const [priceCurrency, setPriceCurrency] = useState("INR");
     const [images, setImages] = useState([]); // Array of { file, preview }
+    const [stock, setStock] = useState("");
+    const [attributes, setAttributes] = useState([{ key: "", value: "" }]);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleImageChange = (e) => {
@@ -47,6 +49,16 @@ const CreateProduct = () => {
             formData.append("description", description);
             formData.append("priceAmount", priceAmount);
             formData.append("priceCurrency", priceCurrency);
+            formData.append("stock", stock);
+
+            // Convert attributes array to object format
+            const filteredAttributes = attributes.filter(a => a.key.trim() && a.value.trim());
+            if (filteredAttributes.length > 0) {
+                const attributesObject = Object.fromEntries(
+                    filteredAttributes.map(a => [a.key.trim(), a.value.trim()])
+                );
+                formData.append("attributes", JSON.stringify(attributesObject));
+            }
 
             images.forEach((img) => {
                 formData.append("images", img.file);
@@ -91,6 +103,10 @@ const CreateProduct = () => {
                     setPriceAmount={setPriceAmount}
                     priceCurrency={priceCurrency}
                     setPriceCurrency={setPriceCurrency}
+                    stock={stock}
+                    setStock={setStock}
+                    attributes={attributes}
+                    setAttributes={setAttributes}
                     images={images}
                     handleImageChange={handleImageChange}
                     removeImage={removeImage}

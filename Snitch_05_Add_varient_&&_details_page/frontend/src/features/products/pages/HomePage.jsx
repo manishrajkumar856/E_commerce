@@ -26,7 +26,8 @@ const HomePage = () => {
                 (product.category && product.category.toLowerCase() === selectedCategory.toLowerCase()) ||
                 (product.title.toLowerCase().includes(selectedCategory.toLowerCase()));
 
-            const matchesPrice = product.price?.amount <= priceRange;
+            const productPrice = product.price?.amount || product.variants?.[0]?.price?.amount || 0;
+            const matchesPrice = productPrice <= priceRange;
             const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 product.description?.toLowerCase().includes(searchQuery.toLowerCase());
 

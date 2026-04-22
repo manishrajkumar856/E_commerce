@@ -3,7 +3,14 @@ import { ShoppingCart, Heart } from 'lucide-react';
 import { Link } from 'react-router';
 
 const ProductCard = ({ product }) => {
-    const { _id, title, price, images } = product;
+    const { _id, title, variants } = product;
+    
+    // Get default variant (first one)
+    const defaultVariant = variants && variants[0] ? variants[0] : null;
+    
+    // Resilient data extraction
+    const price = product.price || defaultVariant?.price;
+    const images = (product.images?.length > 0 ? product.images : defaultVariant?.images) || [];
     const imageUrl = images && images[0] ? images[0].url : 'https://via.placeholder.com/400x500?text=No+Image';
 
     return (
@@ -42,7 +49,7 @@ const ProductCard = ({ product }) => {
                 </Link>
                 <div className="flex items-center justify-between">
                     <span className="font-sans font-bold text-primary text-xl">
-                        {price?.currency === 'INR' ? '₹' : product.price?.currency} {price?.amount?.toLocaleString()}
+                        {price?.currency === 'INR' ? '₹' : price?.currency} {price?.amount?.toLocaleString()}
                     </span>
                     <span className="text-xs text-[var(--theme-text-muted)] uppercase tracking-widest font-bold bg-[var(--theme-input-bg)] px-2 py-1 rounded">
                         New

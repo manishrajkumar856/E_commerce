@@ -47,5 +47,10 @@ export const useAuth = () => {
     }
 
 
-    return { handleRegister, handleLogin, handleGetMe }
+    const handleLogout = () => {
+        dispatch(setUser(null));
+    }
+
+
+    return { handleRegister, handleLogin, handleGetMe, handleLogout }
 }

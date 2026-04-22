@@ -1,14 +1,29 @@
 import React from 'react';
-import { UploadCloud, X, Plus, Terminal } from 'lucide-react';
+import { UploadCloud, X, Plus, Terminal, Tag, Package, Trash2 } from 'lucide-react';
 
 const ProductForm = ({ 
   title, setTitle, 
   description, setDescription, 
   priceAmount, setPriceAmount, 
-  priceCurrency, setPriceCurrency, 
+  priceCurrency, setPriceCurrency,
+  stock, setStock,
+  attributes, setAttributes, 
   images, handleImageChange, removeImage,
   handleSubmit, isSubmitting 
 }) => {
+  const addAttribute = () => setAttributes(prev => [...prev, { key: '', value: '' }]);
+
+  const updateAttribute = (index, field, value) => {
+    setAttributes(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  };
+
+  const removeAttribute = (index) => {
+    setAttributes(prev => prev.filter((_, i) => i !== index));
+  };
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-5xl mx-auto space-y-24 pb-24">
       {/* Header Section */}
@@ -81,6 +96,64 @@ const ProductForm = ({
                 <option value="USD" className="bg-surface">USD — US Dollar</option>
                 <option value="EUR" className="bg-surface">EUR — Euro</option>
               </select>
+            </div>
+          </div>
+
+          {/* Inventory & Specs */}
+          <div className="space-y-12 pt-8">
+            <div className="group relative">
+              <label className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] font-bold text-[var(--theme-text-muted)] mb-6">
+                <Package className="w-4 h-4 text-primary" /> Inventory Status
+              </label>
+              <input 
+                type="number" 
+                value={stock}
+                onChange={(e) => setStock(e.target.value)}
+                placeholder="UNITS IN STOCK"
+                className="w-full bg-transparent border-b-2 border-[var(--theme-border)] py-4 text-3xl font-black focus:outline-none focus:border-primary transition-all duration-500 placeholder:text-[var(--theme-text-muted)]/20"
+                required
+              />
+            </div>
+
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] font-bold text-[var(--theme-text-muted)]">
+                  <Tag className="w-4 h-4 text-primary" /> Specifications
+                </label>
+                <button 
+                  type="button" 
+                  onClick={addAttribute}
+                  className="text-[10px] font-bold text-primary hover:bg-primary/10 px-4 py-2 rounded-full border border-primary/20 transition-all flex items-center gap-2"
+                >
+                  <Plus className="w-3 h-3" /> ADD FIELD
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                {attributes.map((attr, idx) => (
+                  <div key={idx} className="flex gap-4 items-center animate-fade-up">
+                    <input
+                      placeholder="KEY (E.G. MATERIAL)"
+                      value={attr.key}
+                      onChange={e => updateAttribute(idx, 'key', e.target.value)}
+                      className="flex-1 bg-[var(--theme-input-bg)] border border-[var(--theme-border)] p-4 text-[10px] font-bold uppercase tracking-widest focus:border-primary outline-none transition-all rounded-xl placeholder:text-[var(--theme-text-muted)]/30"
+                    />
+                    <input
+                      placeholder="VALUE (E.G. SILK)"
+                      value={attr.value}
+                      onChange={e => updateAttribute(idx, 'value', e.target.value)}
+                      className="flex-1 bg-[var(--theme-input-bg)] border border-[var(--theme-border)] p-4 text-[10px] font-bold uppercase tracking-widest focus:border-primary outline-none transition-all rounded-xl placeholder:text-[var(--theme-text-muted)]/30"
+                    />
+                    <button 
+                      type="button" 
+                      onClick={() => removeAttribute(idx)}
+                      className="p-3 text-red-500/50 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
